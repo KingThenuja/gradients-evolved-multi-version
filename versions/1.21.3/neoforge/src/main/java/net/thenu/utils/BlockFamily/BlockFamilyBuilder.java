@@ -34,32 +34,49 @@ public class BlockFamilyBuilder {
         String name = definition.name();
         BlockBehaviour.Properties baseProps = definition.properties();
 
-        DeferredBlock<Block> base      = register(name,                () -> new Block(withKey(modId, name, baseProps)));
-        DeferredBlock<Block> stairs    = register(name + "_stairs",    () -> new StairBlock(base.get().defaultBlockState(), withKeyCopy(modId, name + "_stairs", base.get())));
-        DeferredBlock<Block> slab      = register(name + "_slab",      () -> new SlabBlock(withKeyCopy(modId, name + "_slab",      base.get())));
-        DeferredBlock<Block> fence     = register(name + "_fence",     () -> new FenceBlock(withKeyCopy(modId, name + "_fence",     base.get())));
-        DeferredBlock<Block> fenceGate = register(name + "_fence_gate",() -> new FenceGateBlock(WoodType.OAK, withKeyCopy(modId, name + "_fence_gate", base.get())));
-        DeferredBlock<Block> wall      = register(name + "_wall",      () -> new WallBlock(withKeyCopy(modId, name + "_wall",      base.get())));
+        // 1.21.2+: setId() MUST be called on properties before the Block is constructed.
+        // DeferredRegister lambdas are evaluated lazily at registration time, so we capture
+        // the name strings and build fresh keyed properties inside each lambda.
+        DeferredBlock<Block> base = register(name, () ->
+                new Block(withId(modId, name, baseProps)));
+
+        DeferredBlock<Block> stairs = register(name + "_stairs", () ->
+                new StairBlock(base.get().defaultBlockState(),
+                        withIdCopy(modId, name + "_stairs", base.get())));
+
+        DeferredBlock<Block> slab = register(name + "_slab", () ->
+                new SlabBlock(withIdCopy(modId, name + "_slab", base.get())));
+
+        DeferredBlock<Block> fence = register(name + "_fence", () ->
+                new FenceBlock(withIdCopy(modId, name + "_fence", base.get())));
+
+        DeferredBlock<Block> fenceGate = register(name + "_fence_gate", () ->
+                new FenceGateBlock(WoodType.OAK, withIdCopy(modId, name + "_fence_gate", base.get())));
+
+        DeferredBlock<Block> wall = register(name + "_wall", () ->
+                new WallBlock(withIdCopy(modId, name + "_wall", base.get())));
 
         return new BlockFamily(base, slab, stairs, wall, fence, fenceGate);
     }
 
-    // 1.21.2+: block settings must carry the registry key
-    private static BlockBehaviour.Properties withKey(String modId, String name, BlockBehaviour.Properties props) {
-        ResourceKey<Block> key = ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(modId, name));
+    /** Properties with setId() applied — must be done before Block construction in 1.21.2+. */
+    private static BlockBehaviour.Properties withId(String modId, String name, BlockBehaviour.Properties props) {
+        ResourceKey<Block> key = ResourceKey.create(Registries.BLOCK,
+                ResourceLocation.fromNamespaceAndPath(modId, name));
         return props.setId(key);
     }
 
-    private static BlockBehaviour.Properties withKeyCopy(String modId, String name, Block base) {
-        ResourceKey<Block> key = ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(modId, name));
+    private static BlockBehaviour.Properties withIdCopy(String modId, String name, Block base) {
+        ResourceKey<Block> key = ResourceKey.create(Registries.BLOCK,
+                ResourceLocation.fromNamespaceAndPath(modId, name));
         return BlockBehaviour.Properties.ofFullCopy(base).setId(key);
     }
 
     private DeferredBlock<Block> register(String name, Supplier<Block> supplier) {
         DeferredBlock<Block> block = blockRegister.register(name, supplier);
-        ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(modId, name));
+        ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM,
+                ResourceLocation.fromNamespaceAndPath(modId, name));
         itemRegister.register(name, () -> {
-            // 1.21.2+: item settings must also carry the registry key
             BlockItem item = new BlockItem(block.get(), new Item.Properties()
                     .setId(itemKey)
                     .useBlockDescriptionPrefix());

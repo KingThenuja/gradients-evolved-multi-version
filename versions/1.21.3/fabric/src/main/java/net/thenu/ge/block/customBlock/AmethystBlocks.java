@@ -39,11 +39,7 @@ public class AmethystBlocks {
     public static final BlockFamily CHISELED_AMETHYST_BLOCK = new BlockFamilyBuilder(GE.MOD_ID, new BlockFamilyDefinition(
             "chiseled_amethyst_block", AbstractBlock.Settings.copy(Blocks.AMETHYST_BLOCK))).build();
 
-    // Registry keys are now required in block/item settings (1.21.2+)
-    private static RegistryKey<Block> blockKey(String name) {
-        return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(GE.MOD_ID, name));
-    }
-
+    // Key must be in settings BEFORE new RedstoneLampBlock(...) is called
     public static final Block CIRCULAR_AMETHYST_LAMP = registerBlock(
             "circular_amethyst_lamp",
             new RedstoneLampBlock(AbstractBlock.Settings.create()
@@ -51,7 +47,7 @@ public class AmethystBlocks {
                     .strength(1.5f)
                     .luminance(state -> state.get(RedstoneLampBlock.LIT) ? 12 : 0)
                     .sounds(BlockSoundGroup.AMETHYST_BLOCK)
-                    .registryKey(blockKey("circular_amethyst_lamp"))));
+                    .registryKey(RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(GE.MOD_ID, "circular_amethyst_lamp")))));
 
     public static final Block CROSSED_AMETHYST_LAMP = registerBlock(
             "crossed_amethyst_lamp",
@@ -60,5 +56,5 @@ public class AmethystBlocks {
                     .strength(1.5f)
                     .luminance(state -> state.get(RedstoneLampBlock.LIT) ? 12 : 0)
                     .sounds(BlockSoundGroup.AMETHYST_BLOCK)
-                    .registryKey(blockKey("crossed_amethyst_lamp"))));
+                    .registryKey(RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(GE.MOD_ID, "crossed_amethyst_lamp")))));
 }

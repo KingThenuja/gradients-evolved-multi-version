@@ -41,18 +41,19 @@ public class AmethystBlocks {
         ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM,
                 ResourceLocation.fromNamespaceAndPath(GE.MOD_ID, name));
 
+        // setId() applied BEFORE new RedstoneLampBlock(...) — required in 1.21.2+
         DeferredBlock<Block> block = GEBlocks.BLOCKS.register(name, () ->
                 new RedstoneLampBlock(BlockBehaviour.Properties.of()
                         .mapColor(MapColor.COLOR_PURPLE)
                         .strength(1.5f)
                         .lightLevel(state -> state.getValue(RedstoneLampBlock.LIT) ? 12 : 0)
                         .sound(SoundType.AMETHYST)
-                        .setId(blockKey)));  // 1.21.2+: registry key required in settings
+                        .setId(blockKey)));
 
         GEBlocks.ITEMS.register(name, () -> {
             BlockItem item = new BlockItem(block.get(), new Item.Properties()
                     .setId(itemKey)
-                    .useBlockDescriptionPrefix());  // 1.21.2+: item key + block prefix translation
+                    .useBlockDescriptionPrefix());
             ItemGroupRegistry.add(item);
             return item;
         });
